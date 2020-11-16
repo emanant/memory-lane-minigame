@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link rel="stylesheet" href="./index.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.3/pixi.min.js"></script>
+    </head>
+    <body>
+        <script>
+            let app = new PIXI.Application({
+                height: 800,
+                width: 600,
+                backgroundColor: 0x124354,
+            });
+            document.body.appendChild(app.view);
+            // let alienImages = ['./assets/square_1.png'];
+            // // , './assets/square_2.png', './assets/square_3.png', './assets/square_4.png'
+            // let textureArray = [];
+
+            // for (let i = 0; i < 1; i++) {
+            //     let texture = PIXI.Texture.from(alienImages[i]);
+            //     textureArray.push(texture);
+            // }
+            // console.log(textureArray);
+            let texture = PIXI.Texture.from('./assets/square_1.png');
+            let texture2 = PIXI.Sprite.from('./assets/square_2.png');
+            texture2.x = 400;
+            texture2.y = 400;
+            // let animatedSprite = new PIXI.AnimatedSprite([textureArray[0], textureArray[0]]);
+            let animatedSprite = new PIXI.AnimatedSprite([texture, texture]);
+
+            animatedSprite.animationSpeed = 0.04;
+            // animatedSprite.start;
+            // animatedSprite.gotoAndPlay(Math.random() * 27);
+            animatedSprite.loop = false;
+            animatedSprite.play();
+            animatedSprite.x = 200;
+            // animatedSprite.update(0.005);
+            animatedSprite.onComplete = function () {
+                animatedSprite.visible = false;
+            };
+
+            app.stage.addChild(animatedSprite, texture2);
+        </script>
+    </body>
+</html>
