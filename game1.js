@@ -8,6 +8,7 @@ let state = {
     round: 1,
     lives: 3,
     score: 0,
+    scoreArr: [],
     aiMoves: 0,
     aiMoveHist: [],
     playerMoves: 0,
@@ -22,6 +23,7 @@ const resetState = () => {
     state.round = 1;
     state.lives = 3;
     state.score = 0;
+    state.scoreArr = [];
     state.aiMoves = 0;
     state.aiMoveHist = [];
     state.playerMoves = 0;
@@ -44,7 +46,7 @@ const gameOverHandler = () => {
 const timeOutTicker = () => {
     if (startTimer) {
         timer += 1;
-        console.log('.');
+        // console.log('.');
         if (timer === 500) {
             flashOverlay('Time Over, Try Again');
         }
@@ -191,7 +193,11 @@ const flashOverlay = (message) => {
         if (state.round > state.lives) {
             gameOverHandler();
             resetState();
-        } else makeMoveAI(false);
+        } else if (message && state.aiMoves > 2) {
+            state.round += 1;
+            roundText.text = `Round: ${state.round}/${state.lives}`;
+        }
+        makeMoveAI(false);
     }, 2500);
 };
 
@@ -212,8 +218,8 @@ const correctSequence = (i) => {
 const validateMove = (i) => {
     if (state.aiMoveHist[state.playerMoves - 1] !== state.playerMoveHist[state.playerMoves - 1]) {
         console.log(`WRONG MOVE! ${state.lives - state.round} lives remaining!`);
-        state.round += 1;
-        if (state.round <= state.lives) {
+        if (state.aiMoves > 2 && state.round <= state.lives) {
+            state.round += 1;
             roundText.text = `Round: ${state.round}/${state.lives}`;
         }
         flashOverlay();
