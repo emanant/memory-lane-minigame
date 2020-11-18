@@ -14,10 +14,11 @@ let state = {
     playerMoveHist: [],
 };
 let gameOver = false;
+let timer = 0,
+    startTimer = false;
 
 // Container handler
-const setGameOver = (mode) => {
-    gameOver = mode;
+const resetState = () => {
     state.round = 1;
     state.lives = 3;
     state.score = 0;
@@ -27,6 +28,27 @@ const setGameOver = (mode) => {
     state.playerMoveHist = [];
     scoreText.text = `Score: ${state.score}`;
     roundText.text = `Round: ${state.round}/${state.lives}`;
+};
+const initGame1 = () => {
+    resetState();
+    PIXI.Ticker.shared.add(timeOutTicker);
+    setTimeout(() => {
+        makeMoveAI();
+    }, 1000);
+};
+const gameOverHandler = () => {
+    PIXI.Ticker.shared.remove(timeOutTicker);
+    gameOver = true;
+    resetState();
+};
+const timeOutTicker = () => {
+    if (startTimer) {
+        timer += 1;
+        console.log('.');
+        if (timer === 500) {
+            flashOverlay('Time Over, Try Again');
+        }
+    }
 };
 
 // --- scoreBar ---
@@ -44,7 +66,12 @@ const scoreText = new PIXI.Text(`Score: ${state.score}`, TEXTSTYLE);
 scoreText.anchor.set(0.5);
 scoreText.position.set((7 * scoreBar.width) / 8, scoreBar.position.y + scoreBar.height / 2);
 
-Game1.addChild(scoreBar, roundText, scoreText);
+const watchText = new PIXI.Text('Watch', TEXTSTYLE);
+watchText.anchor.set(0.5);
+watchText.position.set(scoreBar.width / 2, scoreBar.position.y + (3 * scoreBar.height) / 2);
+watchText.visible = false;
+
+Game1.addChild(scoreBar, roundText, scoreText, watchText);
 
 // --- middle interactive screen ---
 // animated squares
@@ -65,10 +92,8 @@ animatedCR.width = W * 0.4 + 20;
 animatedCR.height = W * 0.4 + 20;
 animatedCR.loop = false;
 animatedCR.visible = false;
-animatedCR.animationSpeed = 0.1;
+animatedCR.animationSpeed = 0.06;
 animatedCR.onComplete = () => (animatedCR.visible = false);
-
-Game1.addChild(animatedHL, animatedCR);
 
 // stationary squares
 let squares = [],
@@ -90,12 +115,30 @@ for (let i = 0; i < 4; i++) {
         animatedHL.position.set(square.x, square.y);
         animatedHL.visible = true;
         animatedHL.play();
+        timer = 0;
         if (!!e) {
             makeMovePlayer(i);
         }
     });
     Game1.addChild(square);
 }
+Game1.addChild(animatedHL, animatedCR);
+
+// overlays
+const overlay = new PIXI.Graphics()
+    .beginFill(COLORS.PRIMARY, 0.5)
+    .drawRect(0, 75, W, H - 75)
+    .endFill()
+    .beginFill(COLORS.PRIMARY, 0.8)
+
+    .drawRect(0, H / 2 - 50, W, 160)
+    .endFill();
+const overlay_text = new PIXI.Text('Wrong move !\ntry again', Object.assign({}, TEXTSTYLE, { lineHeight: 40, fontSize: 30, fontWeight: 'bold' }));
+overlay_text.anchor.set(0.5);
+overlay_text.position.set(overlay.getBounds().x + overlay.width / 2, overlay.getBounds().y + overlay.height / 2);
+overlay.visible = false;
+overlay_text.visible = false;
+Game1.addChild(overlay, overlay_text);
 
 const toggleButtonMode = () => {
     for (let i = 0; i < 4; i++) {
@@ -112,9 +155,8 @@ const makeMoveAIscheduled = (i) => {
     }, 1000 * i);
 };
 const makeMoveAI = (newMove = true) => {
-    // toggleButtonMode();
+    watchText.visible = true;
     if (newMove) {
-        // let pos = Math.floor(4 * Math.random());
         var milliseconds = new Date().getMilliseconds();
         let pos = Math.floor((milliseconds * 4) / 1000);
         state.aiMoveHist.push(pos);
@@ -124,11 +166,35 @@ const makeMoveAI = (newMove = true) => {
     for (i = 0; i < state.aiMoves; i++) {
         makeMoveAIscheduled(i);
     }
-    setTimeout(() => toggleButtonMode(), 1000 * (i - 1) + 500);
+    setTimeout(() => {
+        watchText.visible = false;
+        toggleButtonMode();
+        timer = 0;
+        startTimer = true;
+    }, 1000 * (i - 1) + 500);
     console.log(state.aiMoveHist);
 };
 
 // ----- player Moves -----
+const flashOverlay = (message) => {
+    toggleButtonMode();
+    state.playerMoves = 0;
+    state.playerMoveHist = [];
+    overlay_text.text = message ? message : state.round > state.lives ? 'Game Over' : 'Wrong Move!\nTry again';
+    overlay.visible = true;
+    overlay_text.visible = true;
+    setTimeout(() => {
+        overlay.visible = false;
+        overlay_text.visible = false;
+    }, 2000);
+    setTimeout(() => {
+        if (state.round > state.lives) {
+            gameOverHandler();
+            resetState();
+        } else makeMoveAI(false);
+    }, 2500);
+};
+
 const correctSequence = (i) => {
     console.log('Correct Moves .. ');
     toggleButtonMode();
@@ -139,29 +205,18 @@ const correctSequence = (i) => {
     animatedCR.position.set(squares[i].x, squares[i].y);
     animatedCR.visible = true;
     animatedCR.play();
+    startTimer = false;
     setTimeout(() => makeMoveAI(true), 2000);
 };
 
 const validateMove = (i) => {
     if (state.aiMoveHist[state.playerMoves - 1] !== state.playerMoveHist[state.playerMoves - 1]) {
         console.log(`WRONG MOVE! ${state.lives - state.round} lives remaining!`);
-        if (state.round < state.lives) {
-            state.playerMoves = 0;
-            state.playerMoveHist = [];
-            state.round += 1;
+        state.round += 1;
+        if (state.round <= state.lives) {
             roundText.text = `Round: ${state.round}/${state.lives}`;
-            // Alert animation then timeout makeAiMove(false)
-            toggleButtonMode();
-            setTimeout(() => makeMoveAI(false), 1000);
-        } else {
-            console.log('********* GAME OVER *********');
-            toggleButtonMode();
-            // state.playerMoves = 0;
-            // state.playerMoveHist = [];
-            setGameOver(true);
-            // gameOver = true;
-            // Alert animation then timeout gameover state change -> tick trigger remove game1 add home
         }
+        flashOverlay();
     } else {
         if (state.aiMoves === state.playerMoves) correctSequence(i);
     }
@@ -170,8 +225,11 @@ const makeMovePlayer = (pos) => {
     state.playerMoveHist.push(pos);
     state.playerMoves += 1;
     console.log(state.playerMoveHist);
+    timer = 0;
     validateMove(pos);
 };
-toggleButtonMode();
 
-export { Game1, makeMoveAI, gameOver, setGameOver };
+toggleButtonMode();
+// resetGame();
+
+export { Game1, initGame1, gameOver, resetState };
