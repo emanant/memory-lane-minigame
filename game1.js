@@ -1,6 +1,8 @@
 import { COLORS, TEXTSTYLE } from './consts.js';
 
 const Game1 = new PIXI.Container();
+
+// variables
 let W = 600,
     H = 800;
 
@@ -8,48 +10,65 @@ let state = {
     round: 1,
     lives: 3,
     score: 0,
-    scoreArr: [],
     aiMoves: 0,
     aiMoveHist: [],
     playerMoves: 0,
     playerMoveHist: [],
 };
+let scoreArr = [];
 let gameOver = false;
-let timer = 0,
-    startTimer = false;
-
 // Container handler
 const resetState = () => {
     state.round = 1;
     state.lives = 3;
     state.score = 0;
-    state.scoreArr = [];
     state.aiMoves = 0;
     state.aiMoveHist = [];
     state.playerMoves = 0;
     state.playerMoveHist = [];
     scoreText.text = `Score: ${state.score}`;
     roundText.text = `Round: ${state.round}/${state.lives}`;
+    toggleButtonMode(false);
+    scoreArr = [];
 };
-const initGame1 = () => {
+const initGame = () => {
+    console.log('Game Starting ..');
     resetState();
+
     PIXI.Ticker.shared.add(timeOutTicker);
     setTimeout(() => {
         makeMoveAI();
     }, 1000);
 };
-const gameOverHandler = () => {
+const resetGame = (startGame = false) => {
+    gameOver = false;
+    // resetState();
+    console.log('Game Reset');
+    if (startGame) {
+        initGame();
+    }
+};
+
+const endGame = () => {
     PIXI.Ticker.shared.remove(timeOutTicker);
     gameOver = true;
-    resetState();
+    // resetState();
 };
+
+// ticker timeout
+let timer = 0,
+    startTimer = false;
 const timeOutTicker = () => {
     if (startTimer) {
+        console.log('.');
         timer += 1;
         // console.log('.');
         if (timer === 500) {
             flashOverlay('Time Over, Try Again');
         }
+    }
+    if (gameOver) {
+        gameOver = false;
     }
 };
 
@@ -142,22 +161,24 @@ overlay.visible = false;
 overlay_text.visible = false;
 Game1.addChild(overlay, overlay_text);
 
-const toggleButtonMode = () => {
+const toggleButtonMode = (mode) => {
     for (let i = 0; i < 4; i++) {
-        squares[i].interactive = !squares[i].interactive;
-        squares[i].buttonMode = !squares[i].buttonMode;
+        squares[i].interactive = mode; // !squares[i].interactive;
+        squares[i].buttonMode = mode; // !squares[i].buttonMode;
     }
-    console.log(`button mode ${squares[0].buttonMode}`);
+    console.log(`button mode: ${mode}`);
 };
 
 // ----- AI moves -----
 const makeMoveAIscheduled = (i) => {
     setTimeout(() => {
+        watchText.visible = true;
+    }, 800);
+    setTimeout(() => {
         squares[state.aiMoveHist[i]].emit('pointertap');
-    }, 1000 * i);
+    }, 1000 * (i + 1));
 };
 const makeMoveAI = (newMove = true) => {
-    watchText.visible = true;
     if (newMove) {
         var milliseconds = new Date().getMilliseconds();
         let pos = Math.floor((milliseconds * 4) / 1000);
@@ -170,16 +191,16 @@ const makeMoveAI = (newMove = true) => {
     }
     setTimeout(() => {
         watchText.visible = false;
-        toggleButtonMode();
+        toggleButtonMode(true);
         timer = 0;
         startTimer = true;
-    }, 1000 * (i - 1) + 500);
+    }, 1000 * i + 500);
     console.log(state.aiMoveHist);
 };
 
 // ----- player Moves -----
 const flashOverlay = (message) => {
-    toggleButtonMode();
+    toggleButtonMode(false);
     state.playerMoves = 0;
     state.playerMoveHist = [];
     overlay_text.text = message ? message : state.round > state.lives ? 'Game Over' : 'Wrong Move!\nTry again';
@@ -190,37 +211,42 @@ const flashOverlay = (message) => {
         overlay_text.visible = false;
     }, 2000);
     setTimeout(() => {
-        if (state.round > state.lives) {
-            gameOverHandler();
-            resetState();
+        if (state.round > state.lives || (message && state.round === state.lives)) {
+            let l = scoreArr.length;
+            scoreArr.push(l ? state.score - scoreArr[l - 1] : state.score);
+            endGame();
         } else if (message && state.aiMoves > 2) {
             state.round += 1;
             roundText.text = `Round: ${state.round}/${state.lives}`;
+            let l = scoreArr.length;
+            scoreArr.push(l ? state.score - scoreArr[l - 1] : state.score);
         }
         makeMoveAI(false);
-    }, 2500);
+    }, 2000);
 };
 
 const correctSequence = (i) => {
     console.log('Correct Moves .. ');
-    toggleButtonMode();
+    toggleButtonMode(false);
     state.score += 1;
     scoreText.text = `Score: ${state.score}`;
     state.playerMoveHist = [];
     state.playerMoves = 0;
     animatedCR.position.set(squares[i].x, squares[i].y);
     animatedCR.visible = true;
-    animatedCR.play();
+    animatedCR.play(10);
     startTimer = false;
-    setTimeout(() => makeMoveAI(true), 2000);
+    makeMoveAI(true);
 };
 
 const validateMove = (i) => {
     if (state.aiMoveHist[state.playerMoves - 1] !== state.playerMoveHist[state.playerMoves - 1]) {
         console.log(`WRONG MOVE! ${state.lives - state.round} lives remaining!`);
-        if (state.aiMoves > 2 && state.round <= state.lives) {
+        if (state.aiMoves > 2) {
             state.round += 1;
-            roundText.text = `Round: ${state.round}/${state.lives}`;
+            let l = scoreArr.length;
+            scoreArr.push(l ? state.score - scoreArr[l - 1] : state.score);
+            if (state.round <= state.lives) roundText.text = `Round: ${state.round}/${state.lives}`;
         }
         flashOverlay();
     } else {
@@ -235,7 +261,4 @@ const makeMovePlayer = (pos) => {
     validateMove(pos);
 };
 
-toggleButtonMode();
-// resetGame();
-
-export { Game1, initGame1, gameOver, resetState };
+export { Game1, resetGame, gameOver, scoreArr };

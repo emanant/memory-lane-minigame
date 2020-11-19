@@ -3,6 +3,7 @@ const COLORS = {
     TITLE: 0x0f1226,
     PRIMARY: 0x3b4686,
     TEXT_PRIMARY: 0xffffff,
+    HIGHLIGHT: 0x191e41,
 };
 
 const TEXTSTYLE = {

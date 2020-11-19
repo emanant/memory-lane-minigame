@@ -1,15 +1,15 @@
 import { COLORS, TEXTSTYLE } from './consts.js';
 
-let Home = new PIXI.Container();
+let Menu = new PIXI.Container();
 // let H = window.innerHeight,
 //     W = window.innerWidth;
 let W = 600,
     H = 800;
 
 // Container handle
-let restartGame = false;
-const resetMenu = (mode) => {
-    restartGame = mode;
+let startGame = false;
+const resetMenu = () => {
+    startGame = false;
 };
 
 // --- Top ---
@@ -22,7 +22,7 @@ const topText = new PIXI.Text('How to play', TEXTSTYLE);
 topText.anchor.set(0.5);
 topText.position.set(topRect.getBounds().x + topRect.width / 2, topRect.getBounds().y + topRect.height / 2);
 
-// Home.addChild(topRect, topText);
+// Menu.addChild(topRect, topText);
 
 // --- Middle ---
 const midRect = new PIXI.Graphics()
@@ -34,12 +34,12 @@ const midText = new PIXI.Text('Remember and\nRepeat the sequence\nof color.', Ob
 midText.anchor.set(0.5);
 midText.position.set(midRect.getBounds().x + midRect.width / 2, midRect.getBounds().y + midRect.height / 2);
 
-// Home.addChild(midRect, midText);
+// Menu.addChild(midRect, midText);
 
 // Instructions
 const instructions = new PIXI.Container();
 instructions.addChild(topRect, topText, midRect, midText);
-Home.addChild(instructions);
+Menu.addChild(instructions);
 
 // --- Bottom ---
 const botRect = new PIXI.Graphics()
@@ -70,10 +70,10 @@ botRect.on('pointerout', () => {
 });
 botRect.on('pointerup', () => {
     console.log('Starting the Game..');
-    restartGame = true;
+    startGame = true;
 });
 
-Home.addChild(botRect, botText);
+Menu.addChild(botRect, botText);
 //---- ----- -----
 
-export { Home, restartGame, resetMenu, instructions };
+export { Menu, startGame, resetMenu, instructions };
