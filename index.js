@@ -1,7 +1,7 @@
 import { COLORS, TEXTSTYLE } from './consts.js';
 import { Menu, resetMenu, startGame } from './menu.js';
 import { Game1, resetGame, gameOver } from './game1.js';
-import { ScoreCard, endSession, resetScorecard } from './scorecard.js';
+import { ScoreCard, endSession, initScorecard, resetScorecard } from './scorecard.js';
 
 const W = 600,
     H = 800;
@@ -81,7 +81,7 @@ const tickerGame = () => {
         resetGame();
         app.stage.removeChild(Game1);
         console.log('game over');
-        resetScorecard();
+        initScorecard();
         app.stage.addChild(ScoreCard);
         // app.stage.addChild(Menu);
         // app.ticker.add(tickerMenu);

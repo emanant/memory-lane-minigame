@@ -7,6 +7,20 @@ let H = 800,
 
 let endSession = false;
 
+const initScorecard = () => {
+    endSession = false;
+    let temp = scoreArr.map((e, i) => (!i ? e : e - scoreArr[i - 1]));
+    let iMax = temp.indexOf(Math.max(...temp));
+    for (let i = 0; i < 3; i++) {
+        containers[i].getChildAt(1).text = `${temp[i]}`;
+        // scores[i].text = `${!i ? scoreArr[i] : scoreArr[i] - scoreArr[i - 1]}`;
+        if (i === iMax) {
+            highlighterRect.position.set(containers[i].x - 25, containers[i].y - 40);
+            starBadge.position.set(highlighterRect.x + highlighterRect.width, highlighterRect.y + highlighterRect.height / 2);
+        }
+    }
+};
+
 const resetScorecard = () => {
     endSession = false;
 };
@@ -20,15 +34,19 @@ midText.position.set(W / 2, midRect.position.y);
 ScoreCard.addChild(midRect, midText);
 
 // let scoreArr = [4, 3, 1];
-let iMax = scoreArr.indexOf(Math.max(...scoreArr));
+let iMax = scoreArr.indexOf(Math.max(...scoreArr)) || 0;
 // console.log(iMax);
 
 const highlighterRect = new PIXI.Graphics()
     .beginFill(COLORS.TITLE, 0.5)
     .drawRoundedRect(0, 0, W - 90, 75)
     .endFill();
-ScoreCard.addChild(highlighterRect);
-for (let i = 0; i < scoreArr.length; i++) {
+const starBadge = PIXI.Sprite.from('assets/star_badge.png');
+starBadge.anchor.set(0.5);
+starBadge.scale.set(0.8);
+ScoreCard.addChild(highlighterRect, starBadge);
+let containers = [];
+for (let i = 0; i < 3; i++) {
     const roundContainer = new PIXI.Container();
     const round = new PIXI.Text(`Round ${i + 1}`, TEXTSTYLE);
     round.anchor.set(0, 0.5);
@@ -38,15 +56,13 @@ for (let i = 0; i < scoreArr.length; i++) {
     score.position.x = W - 150;
     roundContainer.addChild(round, score);
     roundContainer.position.set(75, H / 2 + 75 * (i + 1));
+    containers.push(roundContainer);
     ScoreCard.addChild(roundContainer);
-    if (iMax == i) {
+    if (iMax === i) {
         highlighterRect.position.set(roundContainer.x - 25, roundContainer.y - 40);
         // highlighterRect.pivot.set(roundContainer.x - 25, roundContainer.y - 40);
-        const startBadge = PIXI.Sprite.from('assets/star_badge.png');
-        startBadge.anchor.set(0.5);
-        startBadge.scale.set(0.8);
-        startBadge.position.set(highlighterRect.x + highlighterRect.width, highlighterRect.y + highlighterRect.height / 2);
-        ScoreCard.addChild(startBadge);
+
+        starBadge.position.set(highlighterRect.x + highlighterRect.width, highlighterRect.y + highlighterRect.height / 2);
     }
 }
 // continue btn
@@ -70,4 +86,4 @@ botText.position.set(botRect.getBounds().x + botRect.width / 2, botRect.getBound
 
 ScoreCard.addChild(botRect, botText);
 
-export { ScoreCard, endSession, resetScorecard };
+export { ScoreCard, endSession, initScorecard, resetScorecard };

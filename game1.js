@@ -212,14 +212,12 @@ const flashOverlay = (message) => {
     }, 2000);
     setTimeout(() => {
         if (state.round > state.lives || (message && state.round === state.lives)) {
-            let l = scoreArr.length;
-            scoreArr.push(l ? state.score - scoreArr[l - 1] : state.score);
+            scoreArr.push(state.score);
             endGame();
         } else if (message && state.aiMoves > 2) {
             state.round += 1;
             roundText.text = `Round: ${state.round}/${state.lives}`;
-            let l = scoreArr.length;
-            scoreArr.push(l ? state.score - scoreArr[l - 1] : state.score);
+            scoreArr.push(state.score);
         }
         makeMoveAI(false);
     }, 2000);
@@ -244,8 +242,7 @@ const validateMove = (i) => {
         console.log(`WRONG MOVE! ${state.lives - state.round} lives remaining!`);
         if (state.aiMoves > 2) {
             state.round += 1;
-            let l = scoreArr.length;
-            scoreArr.push(l ? state.score - scoreArr[l - 1] : state.score);
+            scoreArr.push(state.score);
             if (state.round <= state.lives) roundText.text = `Round: ${state.round}/${state.lives}`;
         }
         flashOverlay();
