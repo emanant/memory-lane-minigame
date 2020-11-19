@@ -1,6 +1,6 @@
 import { COLORS, TEXTSTYLE } from './consts.js';
-import { Menu, resetMenu, startGame } from './menu.js';
-import { Game1, resetGame, gameOver } from './game1.js';
+import { Menu, resetMenu, startGame, showInstructions } from './menu.js';
+import { Game1, resetGame, gameOver, pauseGame, aiMoving } from './game1.js';
 import { ScoreCard, endSession, initScorecard, resetScorecard } from './scorecard.js';
 
 const W = 600,
@@ -55,11 +55,45 @@ title.endFill();
 const titleText = new PIXI.Text('First Game', TEXTSTYLE);
 titleText.anchor.set(0.5);
 titleText.position.set(title.width / 2, title.height / 2);
-
 const Title = new PIXI.Container();
 Title.addChild(title, titleText);
 
-app.stage.addChild(Title);
+const questionmark_gray = PIXI.Texture.from('assets/questionmark_gray.png');
+const questionmark = PIXI.Texture.from('assets/questionmark.png');
+const arrowback = PIXI.Texture.from('assets/back.png');
+const info = PIXI.Sprite.from(questionmark);
+info.scale.set(0.8);
+info.anchor.set(0.5);
+info.position.set(75 / 2, Title.height / 2);
+info.interactive = true;
+info.buttomMode = true;
+info.on('pointerup', () => {
+    if (info.texture === questionmark) {
+        info.texture = arrowback;
+        Menu.visible = true;
+        pauseGame(true);
+        showInstructions();
+    } else {
+        info.texture = questionmark;
+        Menu.visible = false;
+        pauseGame(false);
+    }
+});
+
+const volumeFull = PIXI.Texture.from('assets/volume_full.png');
+const volumeMute = PIXI.Texture.from('assets/volume_mute.png');
+const volume = PIXI.Sprite.from(volumeFull);
+volume.scale.set(0.8);
+volume.anchor.set(0.5);
+volume.position.set(Title.width - 75 / 2, Title.height / 2);
+volume.buttomMode = true;
+volume.interactive = true;
+volume.on('pointerup', () => {
+    volume.texture = volume.texture === volumeFull ? volumeMute : volumeFull;
+});
+info.visible = false;
+volume.visible = false;
+app.stage.addChild(Title, info, volume);
 // --- menu screen ---
 // app.stage.addChild(Menu);
 
@@ -67,11 +101,15 @@ const tickerMenu = () => {
     // console.log('ticker-start menu active');
     if (startGame) {
         console.log('Starting the Game');
+        info.visible = true;
+        volume.visible = true;
         resetGame(startGame);
         app.stage.addChild(Game1);
         app.ticker.add(tickerGame);
         resetMenu();
-        app.stage.removeChild(Menu);
+        Menu.visible = false;
+        // app.stage.removeChild(Menu);
+        Menu.visible = false;
         app.ticker.remove(tickerMenu);
     }
 };
@@ -79,6 +117,10 @@ const tickerGame = () => {
     // console.log('ticker game active');
     if (gameOver) {
         resetGame();
+        info.visible = false;
+        volume.visible = false;
+        Menu.visible = false;
+        // app.stage.removeChild(Menu);
         app.stage.removeChild(Game1);
         console.log('game over');
         initScorecard();
@@ -90,9 +132,22 @@ const tickerGame = () => {
     if (endSession) {
         resetScorecard();
         app.stage.removeChild(ScoreCard);
-        app.stage.addChild(Menu);
+        // app.stage.addChild(Menu);
+        Menu.visible = true;
+        resetMenu();
         app.ticker.add(tickerMenu);
         app.ticker.remove(tickerGame);
+    }
+    if (aiMoving && info.buttomMode) {
+        // info.tint = 0.1 * 2 * Math.PI;
+        info.texture = questionmark_gray;
+        info.buttomMode = false;
+        info.interactive = false;
+    } else if (!info.buttomMode) {
+        // info.tint = 0.1 * 2 * Math.PI;
+        info.texture = questionmark;
+        info.buttomMode = true;
+        info.interactive = true;
     }
 };
 

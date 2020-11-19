@@ -16,7 +16,9 @@ let state = {
     playerMoveHist: [],
 };
 let scoreArr = [];
-let gameOver = false;
+let gameOver = false,
+    aiMoving = false;
+
 // Container handler
 const resetState = () => {
     state.round = 1;
@@ -55,13 +57,27 @@ const endGame = () => {
     // resetState();
 };
 
+const pauseGame = () => {
+    if (!paused) {
+        paused = true;
+        Game1.visible = false;
+        console.log('Game Paused');
+    } else {
+        paused = false;
+        timer = 0;
+        Game1.visible = true;
+        console.log('Game Resumed');
+        // makeMoveAI(false);
+    }
+};
 // ticker timeout
 let timer = 0,
-    startTimer = false;
+    startTimer = false,
+    paused = false;
 const timeOutTicker = () => {
-    if (startTimer) {
-        console.log('.');
+    if (!paused && startTimer) {
         timer += 1;
+        !(timer % 100) && console.log('timer:', timer);
         // console.log('.');
         if (timer === 500) {
             flashOverlay('Time Over, Try Again');
@@ -167,6 +183,7 @@ const toggleButtonMode = (mode) => {
         squares[i].buttonMode = mode; // !squares[i].buttonMode;
     }
     console.log(`button mode: ${mode}`);
+    aiMoving = !mode;
 };
 
 // ----- AI moves -----
@@ -219,7 +236,7 @@ const flashOverlay = (message) => {
             roundText.text = `Round: ${state.round}/${state.lives}`;
             scoreArr.push(state.score);
         }
-        makeMoveAI(false);
+        !gameOver && makeMoveAI(false);
     }, 2000);
 };
 
@@ -258,4 +275,4 @@ const makeMovePlayer = (pos) => {
     validateMove(pos);
 };
 
-export { Game1, resetGame, gameOver, scoreArr };
+export { Game1, resetGame, gameOver, pauseGame, aiMoving, scoreArr };

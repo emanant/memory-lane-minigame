@@ -10,7 +10,20 @@ let W = 600,
 let startGame = false;
 const resetMenu = () => {
     startGame = false;
+    botRect.visible = true;
+    botText.visible = true;
+    instructions.visible = true;
 };
+
+const showInstructions = (show) => {
+    // instructions.visible = show ? show : !show;
+    botRect.visible = false;
+    botText.visible = false;
+};
+
+// const toggleInfo = () => {
+//     instructions.visible = !instructions.visible;
+// };
 
 // --- Top ---
 const topRect = new PIXI.Graphics()
@@ -37,7 +50,7 @@ midText.position.set(midRect.getBounds().x + midRect.width / 2, midRect.getBound
 // Menu.addChild(midRect, midText);
 
 // Instructions
-const instructions = new PIXI.Container();
+let instructions = new PIXI.Container();
 instructions.addChild(topRect, topText, midRect, midText);
 Menu.addChild(instructions);
 
@@ -71,9 +84,11 @@ botRect.on('pointerout', () => {
 botRect.on('pointerup', () => {
     console.log('Starting the Game..');
     startGame = true;
+    botRect.visible = false;
+    botText.visible = false;
 });
 
 Menu.addChild(botRect, botText);
 //---- ----- -----
 
-export { Menu, startGame, resetMenu, instructions };
+export { Menu, startGame, resetMenu, showInstructions };
