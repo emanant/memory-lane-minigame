@@ -9,40 +9,79 @@
     </head>
     <body>
         <script>
-            let app = new PIXI.Application({
-                height: 800,
-                width: 600,
-                backgroundColor: 0x124354,
-            });
+            const app = new PIXI.Application();
             document.body.appendChild(app.view);
-            // let alienImages = ['./assets/square_1.png'];
-            // // , './assets/square_2.png', './assets/square_3.png', './assets/square_4.png'
-            // let textureArray = [];
 
-            // for (let i = 0; i < 1; i++) {
-            //     let texture = PIXI.Texture.from(alienImages[i]);
-            //     textureArray.push(texture);
-            // }
-            // console.log(textureArray);
-            let texture = PIXI.Texture.from('./assets/square_1.png');
-            let texture2 = PIXI.Sprite.from('./assets/square_2.png');
-            texture2.x = 400;
-            texture2.y = 400;
-            // let animatedSprite = new PIXI.AnimatedSprite([textureArray[0], textureArray[0]]);
-            let animatedSprite = new PIXI.AnimatedSprite([texture, texture]);
+            // Get the texture for rope.
+            const starTexture = PIXI.Texture.from('assets/star.png');
 
-            animatedSprite.animationSpeed = 0.04;
-            // animatedSprite.start;
-            // animatedSprite.gotoAndPlay(Math.random() * 27);
-            animatedSprite.loop = false;
-            animatedSprite.play();
-            animatedSprite.x = 200;
-            // animatedSprite.update(0.005);
-            animatedSprite.onComplete = function () {
-                animatedSprite.visible = false;
-            };
+            const starAmount = 1000;
+            let cameraZ = 0;
+            const fov = 20;
+            const baseSpeed = 0.025;
+            let speed = 0;
+            let warpSpeed = 0;
+            const starStretch = 5;
+            const starBaseSize = 0.05;
 
-            app.stage.addChild(animatedSprite, texture2);
+            // Create the stars
+            const stars = [];
+            for (let i = 0; i < starAmount; i++) {
+                const star = {
+                    sprite: new PIXI.Sprite(starTexture),
+                    z: 0,
+                    x: 0,
+                    y: 0,
+                };
+                star.sprite.anchor.x = 0.5;
+                star.sprite.anchor.y = 0.7;
+                star.sprite.tint = Math.random() * 0xffffff; // added
+                randomizeStar(star, true);
+                app.stage.addChild(star.sprite);
+                stars.push(star);
+            }
+
+            function randomizeStar(star, initial) {
+                star.z = initial ? Math.random() * 2000 : cameraZ + Math.random() * 1000 + 2000;
+
+                // Calculate star positions with radial random coordinate so no star hits the camera.
+                const deg = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 50 + 1;
+                star.x = Math.cos(deg) * distance;
+                star.y = Math.sin(deg) * distance;
+            }
+
+            // Change flight speed every 5 seconds
+            setInterval(() => {
+                warpSpeed = warpSpeed > 0 ? 0 : 1;
+            }, 5000);
+
+            // Listen for animate update
+            app.ticker.add((delta) => {
+                // Simple easing. This should be changed to proper easing function when used for real.
+                speed += (warpSpeed - speed) / 20;
+                cameraZ += delta * 10 * (speed + baseSpeed);
+                for (let i = 0; i < starAmount; i++) {
+                    const star = stars[i];
+                    if (star.z < cameraZ) randomizeStar(star);
+
+                    // Map star 3d position to 2d with really simple projection
+                    const z = star.z - cameraZ;
+                    star.sprite.x = star.x * (fov / z) * app.renderer.screen.width + app.renderer.screen.width / 2;
+                    star.sprite.y = star.y * (fov / z) * app.renderer.screen.width + app.renderer.screen.height / 2;
+
+                    // Calculate star scale & rotation.
+                    const dxCenter = star.sprite.x - app.renderer.screen.width / 2;
+                    const dyCenter = star.sprite.y - app.renderer.screen.height / 2;
+                    const distanceCenter = Math.sqrt(dxCenter * dxCenter + dyCenter + dyCenter);
+                    const distanceScale = Math.max(0, (2000 - z) / 2000);
+                    star.sprite.scale.x = distanceScale * starBaseSize;
+                    // Star is looking towards center so that y axis is towards center.
+                    // Scale the star depending on how fast we are moving, what the stretchfactor is and depending on how far away it is from the center.
+                    star.sprite.scale.y = distanceScale * starBaseSize + (distanceScale * speed * starStretch * distanceCenter) / app.renderer.screen.width;
+                    star.sprite.rotation = Math.atan2(dyCenter, dxCenter) + Math.PI / 2;
+                }
+            });
         </script>
     </body>
 </html>

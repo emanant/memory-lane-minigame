@@ -15,6 +15,8 @@ const resetMenu = () => {
     instructions.visible = true;
 };
 
+const soundBtn = PIXI.sound.Sound.from('assets/sounds/tap.wav');
+
 const showInstructions = (show) => {
     // instructions.visible = show ? show : !show;
     botRect.visible = false;
@@ -81,8 +83,10 @@ botRect.on('pointerout', () => {
     botRect.scale.set(1, 1);
     botText.scale.set(1, 1);
 });
+
 botRect.on('pointerup', () => {
     console.log('Starting the Game..');
+    soundBtn.play();
     startGame = true;
     botRect.visible = false;
     botText.visible = false;

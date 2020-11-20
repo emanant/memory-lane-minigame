@@ -19,6 +19,10 @@ const app = new PIXI.Application({
 // });
 document.body.appendChild(app.view);
 
+const sound_mute = PIXI.sound.Sound.from('assets/sounds/mute.wav');
+const sound_pause = PIXI.sound.Sound.from('assets/sounds/pause.mp3');
+const sound_resume = PIXI.sound.Sound.from('assets/sounds/resume.mp3');
+
 const eggo = PIXI.Sprite.from('assets/eggo.png');
 eggo.position.set(W / 2, H / 2);
 eggo.height = Math.min(H, W) / 5;
@@ -58,7 +62,7 @@ titleText.position.set(title.width / 2, title.height / 2);
 const Title = new PIXI.Container();
 Title.addChild(title, titleText);
 
-const questionmark_gray = PIXI.Texture.from('assets/questionmark_gray.png');
+// const questionmark_gray = PIXI.Texture.from('assets/questionmark_gray.png');
 const questionmark = PIXI.Texture.from('assets/questionmark.png');
 const arrowback = PIXI.Texture.from('assets/back.png');
 const info = PIXI.Sprite.from(questionmark);
@@ -69,11 +73,13 @@ info.interactive = true;
 info.buttomMode = true;
 info.on('pointerup', () => {
     if (info.texture === questionmark) {
+        sound_pause.play();
         info.texture = arrowback;
         Menu.visible = true;
         pauseGame(true);
         showInstructions();
     } else {
+        sound_resume.play();
         info.texture = questionmark;
         Menu.visible = false;
         pauseGame(false);
@@ -90,6 +96,8 @@ volume.buttomMode = true;
 volume.interactive = true;
 volume.on('pointerup', () => {
     volume.texture = volume.texture === volumeFull ? volumeMute : volumeFull;
+    PIXI.sound.toggleMuteAll();
+    sound_mute.play();
 });
 info.visible = false;
 volume.visible = false;
@@ -139,13 +147,13 @@ const tickerGame = () => {
         app.ticker.remove(tickerGame);
     }
     if (aiMoving && info.buttomMode) {
-        // info.tint = 0.1 * 2 * Math.PI;
-        info.texture = questionmark_gray;
+        // info.texture = questionmark_gray;
+        info.tint = 0x1e1e1e;
         info.buttomMode = false;
         info.interactive = false;
     } else if (!info.buttomMode) {
-        // info.tint = 0.1 * 2 * Math.PI;
-        info.texture = questionmark;
+        // info.texture = questionmark;
+        info.tint = 0xffffff;
         info.buttomMode = true;
         info.interactive = true;
     }

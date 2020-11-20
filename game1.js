@@ -6,6 +6,10 @@ const Game1 = new PIXI.Container();
 let W = 600,
     H = 800;
 
+const sound_click = PIXI.sound.Sound.from('assets/sounds/click2.wav');
+const sound_error = PIXI.sound.Sound.from('assets/sounds/error.wav');
+const sound_correct = PIXI.sound.Sound.from('assets/sounds/gotitem.mp3');
+
 let state = {
     round: 1,
     lives: 3,
@@ -87,6 +91,25 @@ const timeOutTicker = () => {
         gameOver = false;
     }
 };
+// dummy end game
+const btn = new PIXI.Graphics()
+    .beginFill(0x000000)
+    .drawRoundedRect(W - 40, 170, 20, 20)
+    .endFill();
+btn.lineStyle(2, 0xf1f1f1, 1)
+    .moveTo(W - 40, 170, 20, 20)
+    .lineTo(W - 20, 190);
+btn.interactive = true;
+
+const endGameText = new PIXI.Text('endGame', TEXTSTYLE);
+endGameText.scale.set(0.7);
+endGameText.anchor.set(1, 0.5);
+endGameText.position.set(W - 60, 180);
+endGameText.visible = false;
+btn.on('pointerover', () => (endGameText.visible = true))
+    .on('pointerout', () => (endGameText.visible = false))
+    .on('pointerup', () => scoreArr.push(state.score) && endGame());
+Game1.addChild(btn, endGameText);
 
 // --- scoreBar ---
 const scoreBar = new PIXI.Graphics();
@@ -154,7 +177,10 @@ for (let i = 0; i < 4; i++) {
         animatedHL.play();
         timer = 0;
         if (!!e) {
+            // if (state.aiMoves !== state.playerMoves + 1) sound_click.play();
             makeMovePlayer(i);
+        } else {
+            sound_click.play();
         }
     });
     Game1.addChild(square);
@@ -217,6 +243,7 @@ const makeMoveAI = (newMove = true) => {
 
 // ----- player Moves -----
 const flashOverlay = (message) => {
+    sound_error.play();
     toggleButtonMode(false);
     state.playerMoves = 0;
     state.playerMoveHist = [];
@@ -241,6 +268,7 @@ const flashOverlay = (message) => {
 };
 
 const correctSequence = (i) => {
+    sound_correct.play();
     console.log('Correct Moves .. ');
     toggleButtonMode(false);
     state.score += 1;
@@ -265,6 +293,7 @@ const validateMove = (i) => {
         flashOverlay();
     } else {
         if (state.aiMoves === state.playerMoves) correctSequence(i);
+        sound_click.play();
     }
 };
 const makeMovePlayer = (pos) => {
