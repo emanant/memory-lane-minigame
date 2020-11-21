@@ -6,9 +6,9 @@ const Game1 = new PIXI.Container();
 let W = 600,
     H = 800;
 
-const sound_click = PIXI.sound.Sound.from('assets/sounds/click2.wav');
-const sound_error = PIXI.sound.Sound.from('assets/sounds/error.wav');
-const sound_correct = PIXI.sound.Sound.from('assets/sounds/gotitem.mp3');
+const sound_click = PIXI.sound.Sound.from('../assets/sounds/click2.wav');
+const sound_error = PIXI.sound.Sound.from('../assets/sounds/error.wav');
+const sound_correct = PIXI.sound.Sound.from('../assets/sounds/gotitem.mp3');
 
 let state = {
     round: 1,
@@ -91,6 +91,7 @@ const timeOutTicker = () => {
         gameOver = false;
     }
 };
+
 // dummy end game
 const btn = new PIXI.Graphics()
     .beginFill(0x000000)

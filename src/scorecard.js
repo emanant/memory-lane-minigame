@@ -44,14 +44,14 @@ const resetScorecard = () => {
 // Top
 const topContainer = new PIXI.Container();
 ScoreCard.addChild(topContainer);
-const starTexture = PIXI.Texture.from('assets/star.png');
-const star2 = new PIXI.Sprite.from('assets/star2.png');
+const starTexture = PIXI.Texture.from('../assets/star.png');
+const star2 = new PIXI.Sprite.from('../assets/star2.png');
 star2.position.set(W / 2, H / 4 - 10);
 // star2.alpha = 0.1;
 star2.anchor.set(0.5, 0.5);
 star2.scale.set(0.5);
 star2.tint = 0xffff00;
-const conicTexture = PIXI.Texture.from('assets/conic.png');
+const conicTexture = PIXI.Texture.from('../assets/conic.png');
 let conics = [];
 const num_conics = 8;
 for (let i = 0; i < num_conics; i++) {
@@ -125,7 +125,7 @@ const highlighterRect = new PIXI.Graphics()
     .beginFill(COLORS.TITLE, 0.5)
     .drawRoundedRect(0, 0, W - 90, 75)
     .endFill();
-const starBadge = PIXI.Sprite.from('assets/star_badge.png');
+const starBadge = PIXI.Sprite.from('../assets/star_badge.png');
 starBadge.anchor.set(0.5);
 starBadge.scale.set(0.8);
 ScoreCard.addChild(highlighterRect, starBadge);

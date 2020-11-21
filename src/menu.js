@@ -15,7 +15,7 @@ const resetMenu = () => {
     instructions.visible = true;
 };
 
-const soundBtn = PIXI.sound.Sound.from('assets/sounds/tap.wav');
+const soundBtn = PIXI.sound.Sound.from('../assets/sounds/tap.wav');
 
 const showInstructions = (show) => {
     // instructions.visible = show ? show : !show;

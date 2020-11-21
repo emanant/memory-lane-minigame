@@ -3,5 +3,28 @@
     margin: 0;
 }
 body {
-    overflow: hidden;
+    /* overflow: hidden; */
+    background-color: black;
+}
+.fs-svg {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: block;
+    z-index: 3;
+    color: white;
+}
+/* #fullscreen-svg {
+} */
+.hidden {
+    display: none;
+}
+#bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: -1;
+    filter: blur(2px);
 }
