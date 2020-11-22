@@ -132,7 +132,7 @@ const tickerMenu = () => {
         console.log('Starting the Game');
         info.visible = true;
         volume.visible = true;
-        resetGame(startGame);
+        resetGame(true);
         app.stage.addChild(Game1);
         app.ticker.add(tickerGame);
         // resetMenu();

@@ -19,6 +19,8 @@ const resetCountdown = () => {
     i = 0;
     wait = 60;
     finished = false;
+    text.text = '3';
+    text.angle = 0;
 };
 const circle = new PIXI.Graphics()
     .lineStyle(2, COLORS.TEXT_PRIMARY, 1)
